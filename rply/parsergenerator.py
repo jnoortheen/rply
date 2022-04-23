@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 import errno
 import hashlib
 import json
@@ -11,7 +13,7 @@ from appdirs import AppDirs
 from rply.errors import ParserGeneratorError, ParserGeneratorWarning
 from rply.grammar import Grammar
 from rply.parser import LRParser
-from rply.utils import Counter, IdentityDict, iteritems, itervalues
+from rply.utils import Counter, IdentityDict
 
 LARGE_VALUE = sys.maxsize
 
@@ -102,7 +104,7 @@ class ParserGenerator:
         hasher = hashlib.sha1()
         hasher.update(g.start.encode())
         hasher.update(json.dumps(sorted(g.terminals)).encode())
-        for term, (assoc, level) in sorted(iteritems(g.precedence)):
+        for term, (assoc, level) in sorted(g.precedence.items()):
             hasher.update(term.encode())
             hasher.update(assoc.encode())
             hasher.update(bytes(level))
@@ -134,7 +136,7 @@ class ParserGenerator:
             return False
         if sorted(g.precedence) != sorted(data["precedence"]):
             return False
-        for key, (assoc, level) in iteritems(g.precedence):
+        for key, (assoc, level) in g.precedence.items():
             if data["precedence"][key] != [assoc, level]:
                 return False
         if len(g.productions) != len(data["productions"]):
@@ -280,9 +282,9 @@ class LRTable:
     @classmethod
     def from_cache(cls, grammar, data):
         lr_action = [
-            {str(k): v for k, v in iteritems(action)} for action in data["lr_action"]
+            {str(k): v for k, v in action.items()} for action in data["lr_action"]
         ]
-        lr_goto = [{str(k): v for k, v in iteritems(goto)} for goto in data["lr_goto"]]
+        lr_goto = [{str(k): v for k, v in goto.items()} for goto in data["lr_goto"]]
         return LRTable(
             grammar,
             lr_action,
@@ -417,7 +419,7 @@ class LRTable:
 
         default_reductions = [0] * len(lr_action)
         for state, actions in enumerate(lr_action):
-            actions = set(itervalues(actions))
+            actions = set(actions.values())
             if len(actions) == 1 and next(iter(actions)) < 0:
                 default_reductions[state] = next(iter(actions))
         return LRTable(
@@ -638,7 +640,7 @@ class LRTable:
 
     @classmethod
     def add_lookaheads(cls, lookbacks, followset):
-        for trans, lb in iteritems(lookbacks):
+        for trans, lb in lookbacks.items():
             for state, p in lb:
                 f = followset.get(trans, [])
                 laheads = p.lookaheads.setdefault(state, [])

@@ -1,5 +1,6 @@
+from __future__ import annotations
+
 from rply.errors import ParserGeneratorError
-from rply.utils import iteritems
 
 
 def rightmost_terminal(symbols, terminals):
@@ -71,12 +72,10 @@ class Grammar:
         self.start = start
 
     def unused_terminals(self):
-        return [
-            t for t, prods in iteritems(self.terminals) if not prods and t != "error"
-        ]
+        return [t for t, prods in self.terminals.items() if not prods and t != "error"]
 
     def unused_productions(self):
-        return [p for p, prods in iteritems(self.nonterminals) if not prods]
+        return [p for p, prods in self.nonterminals.items() if not prods]
 
     def build_lritems(self):
         """

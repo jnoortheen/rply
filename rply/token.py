@@ -1,3 +1,6 @@
+from __future__ import annotations
+
+
 class BaseBox:
     """
     A base class for polymorphic boxes that wrap parser results. Simply use

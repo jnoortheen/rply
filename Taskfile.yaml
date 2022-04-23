@@ -28,3 +28,8 @@ tasks:
       - find rply -name "*.py" -exec pyupgrade --py38-plus -- "{}" \;
       - isort rply --profile=black
       - black rply
+  annotate:
+    cmds:
+      - pytest --monkeytype-output ./monkeytype.sqlite3
+      - monkeytype list-modules | grep rply. | xargs -I _ monkeytype apply --limit 5000 _
+      - task: format
