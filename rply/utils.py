@@ -1,9 +1,5 @@
 import sys
-
-if sys.version_info >= (3, 3):
-    from collections.abc import MutableMapping
-else:
-    from collections import MutableMapping
+from collections.abc import MutableMapping
 
 
 class IdentityDict(MutableMapping):
@@ -34,7 +30,7 @@ class IdentityDict(MutableMapping):
             yield key
 
 
-class Counter(object):
+class Counter:
     def __init__(self):
         self.value = 0
 
@@ -42,15 +38,9 @@ class Counter(object):
         self.value += 1
 
 
-if sys.version_info >= (3,):
-    def itervalues(d):
-        return d.values()
+def itervalues(d):
+    return d.values()
 
-    def iteritems(d):
-        return d.items()
-else:
-    def itervalues(d):
-        return d.itervalues()
 
-    def iteritems(d):
-        return d.iteritems()
+def iteritems(d):
+    return d.items()

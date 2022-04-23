@@ -13,11 +13,10 @@ from rply.grammar import Grammar
 from rply.parser import LRParser
 from rply.utils import Counter, IdentityDict, iteritems, itervalues
 
-
 LARGE_VALUE = sys.maxsize
 
 
-class ParserGenerator(object):
+class ParserGenerator:
     """
     A ParserGenerator represents a set of production rules, that define a
     sequence of terminals and non-terminals to be replaced with a non-terminal,
@@ -31,6 +30,7 @@ class ParserGenerator(object):
                        precedence.
     :param cache_id: A string specifying an ID for caching.
     """
+
     VERSION = 1
 
     def __init__(self, tokens, precedence=[], cache_id=None):
@@ -84,6 +84,7 @@ class ParserGenerator(object):
                 syms = production.split()
                 self.productions.append((production_name, syms, func, precedence))
             return func
+
         return inner
 
     def error(self, func):
@@ -161,15 +162,13 @@ class ParserGenerator(object):
 
         for unused_term in g.unused_terminals():
             warnings.warn(
-                "Token %r is unused" % unused_term,
-                ParserGeneratorWarning,
-                stacklevel=2
+                "Token %r is unused" % unused_term, ParserGeneratorWarning, stacklevel=2
             )
         for unused_prod in g.unused_productions():
             warnings.warn(
                 "Production %r is not reachable" % unused_prod,
                 ParserGeneratorWarning,
-                stacklevel=2
+                stacklevel=2,
             )
 
         g.build_lritems()
@@ -181,9 +180,9 @@ class ParserGenerator(object):
             cache_dir = AppDirs("rply").user_cache_dir
             cache_file = os.path.join(
                 cache_dir,
-                "%s-%s-%s.json" % (
+                "{}-{}-{}.json".format(
                     self.cache_id, self.VERSION, self.compute_grammar_hash(g)
-                )
+                ),
             )
 
             if os.path.exists(cache_file):
@@ -199,19 +198,15 @@ class ParserGenerator(object):
 
         if table.sr_conflicts:
             warnings.warn(
-                "%d shift/reduce conflict%s" % (
-                    len(table.sr_conflicts),
-                    "s" if len(table.sr_conflicts) > 1 else ""
-                ),
+                "%d shift/reduce conflict%s"
+                % (len(table.sr_conflicts), "s" if len(table.sr_conflicts) > 1 else ""),
                 ParserGeneratorWarning,
                 stacklevel=2,
             )
         if table.rr_conflicts:
             warnings.warn(
-                "%d reduce/reduce conflict%s" % (
-                    len(table.rr_conflicts),
-                    "s" if len(table.rr_conflicts) > 1 else ""
-                ),
+                "%d reduce/reduce conflict%s"
+                % (len(table.rr_conflicts), "s" if len(table.rr_conflicts) > 1 else ""),
                 ParserGeneratorWarning,
                 stacklevel=2,
             )
@@ -265,9 +260,16 @@ def traverse(x, N, stack, F, X, R, FP):
             element = stack.pop()
 
 
-class LRTable(object):
-    def __init__(self, grammar, lr_action, lr_goto, default_reductions,
-                 sr_conflicts, rr_conflicts):
+class LRTable:
+    def __init__(
+        self,
+        grammar,
+        lr_action,
+        lr_goto,
+        default_reductions,
+        sr_conflicts,
+        rr_conflicts,
+    ):
         self.grammar = grammar
         self.lr_action = lr_action
         self.lr_goto = lr_goto
@@ -278,20 +280,16 @@ class LRTable(object):
     @classmethod
     def from_cache(cls, grammar, data):
         lr_action = [
-            dict([(str(k), v) for k, v in iteritems(action)])
-            for action in data["lr_action"]
+            {str(k): v for k, v in iteritems(action)} for action in data["lr_action"]
         ]
-        lr_goto = [
-            dict([(str(k), v) for k, v in iteritems(goto)])
-            for goto in data["lr_goto"]
-        ]
+        lr_goto = [{str(k): v for k, v in iteritems(goto)} for goto in data["lr_goto"]]
         return LRTable(
             grammar,
             lr_action,
             lr_goto,
             data["default_reductions"],
             data["sr_conflicts"],
-            data["rr_conflicts"]
+            data["rr_conflicts"],
         )
 
     @classmethod
@@ -323,9 +321,15 @@ class LRTable(object):
                             if a in st_action:
                                 r = st_action[a]
                                 if r > 0:
-                                    sprec, slevel = grammar.productions[st_actionp[a].number].prec
-                                    rprec, rlevel = grammar.precedence.get(a, ("right", 0))
-                                    if (slevel < rlevel) or (slevel == rlevel and rprec == "left"):
+                                    sprec, slevel = grammar.productions[
+                                        st_actionp[a].number
+                                    ].prec
+                                    rprec, rlevel = grammar.precedence.get(
+                                        a, ("right", 0)
+                                    )
+                                    if (slevel < rlevel) or (
+                                        slevel == rlevel and rprec == "left"
+                                    ):
                                         st_action[a] = -p.number
                                         st_actionp[a] = p
                                         if not slevel and not rlevel:
@@ -345,9 +349,13 @@ class LRTable(object):
                                         grammar.productions[oldp.number].reduced -= 1
                                     else:
                                         chosenp, rejectp = oldp, pp
-                                    rr_conflicts.append((st, repr(chosenp), repr(rejectp)))
+                                    rr_conflicts.append(
+                                        (st, repr(chosenp), repr(rejectp))
+                                    )
                                 else:
-                                    raise ParserGeneratorError("Unknown conflict in state %d" % st)
+                                    raise ParserGeneratorError(
+                                        "Unknown conflict in state %d" % st
+                                    )
                             else:
                                 st_action[a] = -p.number
                                 st_actionp[a] = p
@@ -363,12 +371,22 @@ class LRTable(object):
                                 r = st_action[a]
                                 if r > 0:
                                     if r != j:
-                                        raise ParserGeneratorError("Shift/shift conflict in state %d" % st)
+                                        raise ParserGeneratorError(
+                                            "Shift/shift conflict in state %d" % st
+                                        )
                                 elif r < 0:
-                                    rprec, rlevel = grammar.productions[st_actionp[a].number].prec
-                                    sprec, slevel = grammar.precedence.get(a, ("right", 0))
-                                    if (slevel > rlevel) or (slevel == rlevel and rprec == "right"):
-                                        grammar.productions[st_actionp[a].number].reduced -= 1
+                                    rprec, rlevel = grammar.productions[
+                                        st_actionp[a].number
+                                    ].prec
+                                    sprec, slevel = grammar.precedence.get(
+                                        a, ("right", 0)
+                                    )
+                                    if (slevel > rlevel) or (
+                                        slevel == rlevel and rprec == "right"
+                                    ):
+                                        grammar.productions[
+                                            st_actionp[a].number
+                                        ].reduced -= 1
                                         st_action[a] = j
                                         st_actionp[a] = p
                                         if not rlevel:
@@ -377,7 +395,9 @@ class LRTable(object):
                                         if not slevel and not rlevel:
                                             sr_conflicts.append((st, repr(a), "reduce"))
                                 else:
-                                    raise ParserGeneratorError("Unknown conflict in state %d" % st)
+                                    raise ParserGeneratorError(
+                                        "Unknown conflict in state %d" % st
+                                    )
                             else:
                                 st_action[a] = j
                                 st_actionp[a] = p
@@ -400,7 +420,9 @@ class LRTable(object):
             actions = set(itervalues(actions))
             if len(actions) == 1 and next(iter(actions)) < 0:
                 default_reductions[state] = next(iter(actions))
-        return LRTable(grammar, lr_action, lr_goto, default_reductions, sr_conflicts, rr_conflicts)
+        return LRTable(
+            grammar, lr_action, lr_goto, default_reductions, sr_conflicts, rr_conflicts
+        )
 
     @classmethod
     def lr0_items(cls, grammar, add_count, cidhash, goto_cache):
@@ -470,8 +492,12 @@ class LRTable(object):
     def add_lalr_lookaheads(cls, grammar, C, add_count, cidhash, goto_cache):
         nullable = cls.compute_nullable_nonterminals(grammar)
         trans = cls.find_nonterminal_transitions(grammar, C)
-        readsets = cls.compute_read_sets(grammar, C, trans, nullable, add_count, cidhash, goto_cache)
-        lookd, included = cls.compute_lookback_includes(grammar, C, trans, nullable, add_count, cidhash, goto_cache)
+        readsets = cls.compute_read_sets(
+            grammar, C, trans, nullable, add_count, cidhash, goto_cache
+        )
+        lookd, included = cls.compute_lookback_includes(
+            grammar, C, trans, nullable, add_count, cidhash, goto_cache
+        )
         followsets = cls.compute_follow_sets(trans, readsets, included)
         cls.add_lookaheads(lookd, followsets)
 
@@ -506,11 +532,17 @@ class LRTable(object):
         return trans
 
     @classmethod
-    def compute_read_sets(cls, grammar, C, ntrans, nullable, add_count, cidhash, goto_cache):
+    def compute_read_sets(
+        cls, grammar, C, ntrans, nullable, add_count, cidhash, goto_cache
+    ):
         return digraph(
             ntrans,
-            R=lambda x: cls.reads_relation(C, x, nullable, add_count, cidhash, goto_cache),
-            FP=lambda x: cls.dr_relation(grammar, C, x, nullable, add_count, goto_cache)
+            R=lambda x: cls.reads_relation(
+                C, x, nullable, add_count, cidhash, goto_cache
+            ),
+            FP=lambda x: cls.dr_relation(
+                grammar, C, x, nullable, add_count, goto_cache
+            ),
         )
 
     @classmethod
@@ -551,7 +583,9 @@ class LRTable(object):
         return rel
 
     @classmethod
-    def compute_lookback_includes(cls, grammar, C, trans, nullable, add_count, cidhash, goto_cache):
+    def compute_lookback_includes(
+        cls, grammar, C, trans, nullable, add_count, cidhash, goto_cache
+    ):
         lookdict = {}
         includedict = {}
 

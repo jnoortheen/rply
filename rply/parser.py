@@ -1,7 +1,7 @@
 from rply.errors import ParsingError
 
 
-class LRParser(object):
+class LRParser:
     def __init__(self, lr_table, error_handler):
         self.lr_table = lr_table
         self.error_handler = error_handler
@@ -19,9 +19,7 @@ class LRParser(object):
         while True:
             if self.lr_table.default_reductions[current_state]:
                 t = self.lr_table.default_reductions[current_state]
-                current_state = self._reduce_production(
-                    t, symstack, statestack, state
-                )
+                current_state = self._reduce_production(t, symstack, statestack, state)
                 continue
 
             if lookahead is None:
@@ -71,7 +69,7 @@ class LRParser(object):
         plen = p.getlength()
         start = len(symstack) + (-plen - 1)
         assert start >= 0
-        targ = symstack[start + 1:]
+        targ = symstack[start + 1 :]
         start = len(symstack) + (-plen)
         assert start >= 0
         del symstack[start:]

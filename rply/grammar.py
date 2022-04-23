@@ -9,7 +9,7 @@ def rightmost_terminal(symbols, terminals):
     return None
 
 
-class Grammar(object):
+class Grammar:
     def __init__(self, terminals):
         # A list of all the productions
         self.productions = [None]
@@ -18,7 +18,7 @@ class Grammar(object):
         self.prod_names = {}
         # A dictionary mapping the names of terminals to a list of the rules
         # where they are used
-        self.terminals = dict((t, []) for t in terminals)
+        self.terminals = {t: [] for t in terminals}
         self.terminals["error"] = []
         # A dictionary mapping names of nonterminals to a list of rule numbers
         # where they are used
@@ -39,9 +39,7 @@ class Grammar(object):
             try:
                 prod_prec = self.precedence[precedence]
             except KeyError:
-                raise ParserGeneratorError(
-                    "Precedence %r doesn't exist" % precedence
-                )
+                raise ParserGeneratorError("Precedence %r doesn't exist" % precedence)
 
         pnumber = len(self.productions)
         self.nonterminals.setdefault(prod_name, [])
@@ -59,14 +57,10 @@ class Grammar(object):
 
     def set_precedence(self, term, assoc, level):
         if term in self.precedence:
-            raise ParserGeneratorError(
-                "Precedence already specified for %s" % term
-            )
+            raise ParserGeneratorError("Precedence already specified for %s" % term)
         if assoc not in ["left", "right", "nonassoc"]:
             raise ParserGeneratorError(
-                "Precedence must be one of left, right, nonassoc; not %s" % (
-                    assoc
-                )
+                "Precedence must be one of left, right, nonassoc; not %s" % (assoc)
             )
         self.precedence[term] = (assoc, level)
 
@@ -78,9 +72,7 @@ class Grammar(object):
 
     def unused_terminals(self):
         return [
-            t
-            for t, prods in iteritems(self.terminals)
-            if not prods and t != "error"
+            t for t, prods in iteritems(self.terminals) if not prods and t != "error"
         ]
 
     def unused_productions(self):
@@ -164,7 +156,7 @@ class Grammar(object):
             for p in self.productions[1:]:
                 for i, B in enumerate(p.prod):
                     if B in self.nonterminals:
-                        fst = self._first(p.prod[i + 1:])
+                        fst = self._first(p.prod[i + 1 :])
                         has_empty = False
                         for f in fst:
                             if f != "<empty>" and f not in self.follow[B]:
@@ -179,7 +171,7 @@ class Grammar(object):
                                     added = True
 
 
-class Production(object):
+class Production:
     def __init__(self, num, name, prod, precedence, func):
         self.name = name
         self.prod = prod
@@ -198,13 +190,13 @@ class Production(object):
         self.reduced = 0
 
     def __repr__(self):
-        return "Production(%s -> %s)" % (self.name, " ".join(self.prod))
+        return "Production({} -> {})".format(self.name, " ".join(self.prod))
 
     def getlength(self):
         return len(self.prod)
 
 
-class LRItem(object):
+class LRItem:
     def __init__(self, p, n, before, after):
         self.name = p.name
         self.prod = p.prod[:]
@@ -217,7 +209,7 @@ class LRItem(object):
         self.lr_after = after
 
     def __repr__(self):
-        return "LRItem(%s -> %s)" % (self.name, " ".join(self.prod))
+        return "LRItem({} -> {})".format(self.name, " ".join(self.prod))
 
     def getlength(self):
         return len(self.prod)

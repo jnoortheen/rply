@@ -11,11 +11,12 @@ except ImportError:
     def we_are_translated():
         return False
 
+
 from rply.lexer import Lexer
 
 
-class Rule(object):
-    _attrs_ = ['name', 'flags', '_pattern']
+class Rule:
+    _attrs_ = ["name", "flags", "_pattern"]
 
     def __init__(self, name, pattern, flags=0):
         self.name = name
@@ -41,7 +42,7 @@ class Rule(object):
                 return None
 
 
-class Match(object):
+class Match:
     _attrs_ = ["start", "end"]
 
     def __init__(self, start, end):
@@ -49,7 +50,7 @@ class Match(object):
         self.end = end
 
 
-class LexerGenerator(object):
+class LexerGenerator:
     r"""
     A LexerGenerator represents a set of rules that match pieces of text that
     should either be turned into tokens or ignored by the lexer.

@@ -1,10 +1,11 @@
-class BaseBox(object):
+class BaseBox:
     """
     A base class for polymorphic boxes that wrap parser results. Simply use
     this as a base class for anything you return in a production function of a
     parser. This is necessary because RPython unlike Python expects functions
     to always return objects of the same type.
     """
+
     _attrs_ = []
 
 
@@ -18,13 +19,14 @@ class Token(BaseBox):
                        position of the first character in the source from which
                        this token was generated.
     """
+
     def __init__(self, name, value, source_pos=None):
         self.name = name
         self.value = value
         self.source_pos = source_pos
 
     def __repr__(self):
-        return "Token(%r, %r)" % (self.name, self.value)
+        return f"Token({self.name!r}, {self.value!r})"
 
     def __eq__(self, other):
         if not isinstance(other, Token):
@@ -51,7 +53,7 @@ class Token(BaseBox):
         return self.value
 
 
-class SourcePosition(object):
+class SourcePosition:
     """
     Represents the position of a character in some source string.
 
@@ -62,12 +64,13 @@ class SourcePosition(object):
     The values passed to this object can be retrieved using the identically
     named attributes.
     """
+
     def __init__(self, idx, lineno, colno):
         self.idx = idx
         self.lineno = lineno
         self.colno = colno
 
     def __repr__(self):
-        return "SourcePosition(idx={0}, lineno={1}, colno={2})".format(
+        return "SourcePosition(idx={}, lineno={}, colno={})".format(
             self.idx, self.lineno, self.colno
         )

@@ -1,0 +1,30 @@
+# https://taskfile.dev
+
+version: '3'
+
+
+tasks:
+  clean:
+    cmds:
+      - find rply -name "*.c" -delete
+      - find rply -name "*.so" -delete
+  cy-build:
+    cmds:
+      - cythonize -i rply
+  profile:
+    cmds:
+      # you can inspect the output in qcachegrind or kcachegrind
+      - yappi -f callgrind -o results/profile-rply.callgrind profile_rply.py
+  grind:
+    cmds:
+      - qcachegrind results/profile-rply.callgrind
+  type:
+    cmds:
+      - mypy rply --strict
+    sources:
+      - rply/*.py
+  format:
+    cmds:
+      - find rply -name "*.py" -exec pyupgrade --py38-plus -- "{}" \;
+      - isort rply --profile=black
+      - black rply
