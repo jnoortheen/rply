@@ -8,14 +8,14 @@ from rply.lexer import Lexer
 class Rule:
     _attrs_ = ["name", "flags", "_pattern"]
 
-    def __init__(self, name, pattern, flags=0):
+    def __init__(self, name: str, pattern: str, flags: int | re.RegexFlag = 0) -> None:
         self.name = name
         self.re = re.compile(pattern, flags=flags)
 
     def _freeze_(self):
         return True
 
-    def matches(self, s, pos):
+    def matches(self, s: str, pos: int) -> Match | None:
         m = self.re.match(s, pos)
         return Match(*m.span(0)) if m is not None else None
 
@@ -23,7 +23,7 @@ class Rule:
 class Match:
     _attrs_ = ["start", "end"]
 
-    def __init__(self, start, end):
+    def __init__(self, start: int, end: int) -> None:
         self.start = start
         self.end = end
 
@@ -65,25 +65,25 @@ class LexerGenerator:
     StopIteration
     """
 
-    def __init__(self):
+    def __init__(self) -> None:
         self.rules = []
         self.ignore_rules = []
 
-    def add(self, name, pattern, flags=0):
+    def add(self, name: str, pattern: str, flags: int | re.RegexFlag = 0) -> None:
         """
         Adds a rule with the given `name` and `pattern`. In case of ambiguity,
         the first rule added wins.
         """
         self.rules.append(Rule(name, pattern, flags=flags))
 
-    def ignore(self, pattern, flags=0):
+    def ignore(self, pattern: str, flags: int | re.RegexFlag = 0) -> None:
         """
         Adds a rule whose matched value will be ignored. Ignored rules will be
         matched before regular ones.
         """
         self.ignore_rules.append(Rule("", pattern, flags=flags))
 
-    def build(self):
+    def build(self) -> Lexer:
         """
         Returns a lexer instance, which provides a `lex` method that must be
         called with a string and returns an iterator yielding

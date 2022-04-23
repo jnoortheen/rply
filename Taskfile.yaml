@@ -20,6 +20,7 @@ tasks:
       - qcachegrind results/profile-rply.callgrind
   type:
     cmds:
+      - flake8 rply
       - mypy rply --strict
     sources:
       - rply/*.py
@@ -32,5 +33,5 @@ tasks:
   annotate:
     cmds:
       - pytest --monkeytype-output ./monkeytype.sqlite3
-      - monkeytype list-modules | grep rply. | xargs -I _ monkeytype apply --limit 5000 _
+      - monkeytype list-modules | grep rply. | xargs -n 1 -I _ monkeytype -v apply --sample-count _ &> annotate-{{now | date "2006-01-02_15:04:05" }}.log
       - task: format

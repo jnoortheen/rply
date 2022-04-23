@@ -1,9 +1,13 @@
 from __future__ import annotations
 
+from typing import Any, Callable
+
 from rply.errors import ParserGeneratorError
 
 
-def rightmost_terminal(symbols, terminals):
+def rightmost_terminal(
+    symbols: list[str | Any], terminals: dict[str, list[Any] | list[Any | int]]
+) -> str | None:
     for sym in reversed(symbols):
         if sym in terminals:
             return sym
@@ -11,7 +15,7 @@ def rightmost_terminal(symbols, terminals):
 
 
 class Grammar:
-    def __init__(self, terminals):
+    def __init__(self, terminals: list[str | Any]) -> None:
         # A list of all the productions
         self.productions = [None]
         # A dictionary mapping the names of non-terminals to a list of all
@@ -29,7 +33,13 @@ class Grammar:
         self.precedence = {}
         self.start = None
 
-    def add_production(self, prod_name, syms, func, precedence):
+    def add_production(
+        self,
+        prod_name: str,
+        syms: list[str | Any],
+        func: Callable,
+        precedence: str | None,
+    ) -> None:
         if prod_name in self.terminals:
             raise ParserGeneratorError("Illegal rule name %r" % prod_name)
 
@@ -56,7 +66,7 @@ class Grammar:
 
         self.prod_names.setdefault(prod_name, []).append(p)
 
-    def set_precedence(self, term, assoc, level):
+    def set_precedence(self, term: str, assoc: str, level: int) -> None:
         if term in self.precedence:
             raise ParserGeneratorError("Precedence already specified for %s" % term)
         if assoc not in ["left", "right", "nonassoc"]:
@@ -65,19 +75,19 @@ class Grammar:
             )
         self.precedence[term] = (assoc, level)
 
-    def set_start(self):
+    def set_start(self) -> None:
         start = self.productions[1].name
         self.productions[0] = Production(0, "S'", [start], ("right", 0), None)
         self.nonterminals[start].append(0)
         self.start = start
 
-    def unused_terminals(self):
+    def unused_terminals(self) -> list[str | Any]:
         return [t for t, prods in self.terminals.items() if not prods and t != "error"]
 
-    def unused_productions(self):
+    def unused_productions(self) -> list[str | Any]:
         return [p for p, prods in self.nonterminals.items() if not prods]
 
-    def build_lritems(self):
+    def build_lritems(self) -> None:
         """
         Walks the list of productions and builds a complete set of the LR
         items.
@@ -107,7 +117,7 @@ class Grammar:
                 i += 1
             p.lr_items = lr_items
 
-    def _first(self, beta):
+    def _first(self, beta: list[str | Any]) -> list[str | Any]:
         result = []
         for x in beta:
             x_produces_empty = False
@@ -123,7 +133,7 @@ class Grammar:
             result.append("<empty>")
         return result
 
-    def compute_first(self):
+    def compute_first(self) -> None:
         for t in self.terminals:
             self.first[t] = [t]
 
@@ -142,7 +152,7 @@ class Grammar:
                             self.first[n].append(f)
                             changed = True
 
-    def compute_follow(self):
+    def compute_follow(self) -> None:
         for k in self.nonterminals:
             self.follow[k] = []
 
@@ -171,7 +181,14 @@ class Grammar:
 
 
 class Production:
-    def __init__(self, num, name, prod, precedence, func):
+    def __init__(
+        self,
+        num: int,
+        name: str,
+        prod: list[str | Any],
+        precedence: tuple[str, int],
+        func: Callable | None,
+    ) -> None:
         self.name = name
         self.prod = prod
         self.number = num
@@ -188,15 +205,17 @@ class Production:
         self.lr0_added = 0
         self.reduced = 0
 
-    def __repr__(self):
+    def __repr__(self) -> str:
         return "Production({} -> {})".format(self.name, " ".join(self.prod))
 
-    def getlength(self):
+    def getlength(self) -> int:
         return len(self.prod)
 
 
 class LRItem:
-    def __init__(self, p, n, before, after):
+    def __init__(
+        self, p: Production, n: int, before: str | None, after: list[Any | Production]
+    ) -> None:
         self.name = p.name
         self.prod = p.prod[:]
         self.prod.insert(n, ".")
@@ -210,5 +229,5 @@ class LRItem:
     def __repr__(self):
         return "LRItem({} -> {})".format(self.name, " ".join(self.prod))
 
-    def getlength(self):
+    def getlength(self) -> int:
         return len(self.prod)

@@ -1,14 +1,21 @@
 from __future__ import annotations
 
+from typing import TYPE_CHECKING, Any, Callable
+
 from rply.errors import ParsingError
+
+if TYPE_CHECKING:
+    from rply.lexer import LexerStream
+    from rply.parsergenerator import LRTable
+    from rply.token import BaseBox, Token
 
 
 class LRParser:
-    def __init__(self, lr_table, error_handler):
+    def __init__(self, lr_table: LRTable, error_handler: Callable | None) -> None:
         self.lr_table = lr_table
         self.error_handler = error_handler
 
-    def parse(self, tokenizer, state=None):
+    def parse(self, tokenizer: LexerStream, state: None = None) -> BaseBox:
         from rply.token import Token
 
         lookahead = None
@@ -64,7 +71,13 @@ class LRParser:
                 else:
                     raise ParsingError(None, lookahead.getsourcepos())
 
-    def _reduce_production(self, t, symstack, statestack, state):
+    def _reduce_production(
+        self,
+        t: int,
+        symstack: list[Token | list[str] | BaseBox | None],
+        statestack: list[int],
+        state: Any,
+    ) -> int:
         # reduce a symbol on the stack and emit a production
         p = self.lr_table.grammar.productions[-t]
         pname = p.name

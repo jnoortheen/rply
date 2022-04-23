@@ -23,33 +23,35 @@ class Token(BaseBox):
                        this token was generated.
     """
 
-    def __init__(self, name, value, source_pos=None):
+    def __init__(
+        self, name: str, value: str, source_pos: SourcePosition | None = None
+    ) -> None:
         self.name = name
         self.value = value
         self.source_pos = source_pos
 
-    def __repr__(self):
+    def __repr__(self) -> str:
         return f"Token({self.name!r}, {self.value!r})"
 
-    def __eq__(self, other):
+    def __eq__(self, other: int | Token) -> bool:
         if not isinstance(other, Token):
             return NotImplemented
         return self.name == other.name and self.value == other.value
 
-    def gettokentype(self):
+    def gettokentype(self) -> str:
         """
         Returns the type or name of the token.
         """
         return self.name
 
-    def getsourcepos(self):
+    def getsourcepos(self) -> SourcePosition:
         """
         Returns a :class:`SourcePosition` instance, describing the position of
         this token's first character in the source.
         """
         return self.source_pos
 
-    def getstr(self):
+    def getstr(self) -> str:
         """
         Returns the string represented by this token.
         """
@@ -68,12 +70,12 @@ class SourcePosition:
     named attributes.
     """
 
-    def __init__(self, idx, lineno, colno):
+    def __init__(self, idx: int, lineno: int, colno: int) -> None:
         self.idx = idx
         self.lineno = lineno
         self.colno = colno
 
-    def __repr__(self):
+    def __repr__(self) -> str:
         return "SourcePosition(idx={}, lineno={}, colno={})".format(
             self.idx, self.lineno, self.colno
         )

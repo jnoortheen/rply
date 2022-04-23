@@ -1,20 +1,25 @@
 from __future__ import annotations
 
+from typing import TYPE_CHECKING, Any
+
 from rply.errors import LexingError
 from rply.token import SourcePosition, Token
 
+if TYPE_CHECKING:
+    from rply.lexergenerator import Match, Rule
+
 
 class Lexer:
-    def __init__(self, rules, ignore_rules):
+    def __init__(self, rules: list[Any | Rule], ignore_rules: list[Any | Rule]) -> None:
         self.rules = rules
         self.ignore_rules = ignore_rules
 
-    def lex(self, s):
+    def lex(self, s: str) -> LexerStream:
         return LexerStream(self, s)
 
 
 class LexerStream:
-    def __init__(self, lexer, s):
+    def __init__(self, lexer: Lexer, s: str) -> None:
         self.lexer = lexer
         self.s = s
         self.idx = 0
@@ -22,10 +27,10 @@ class LexerStream:
         self._lineno = 1
         self._colno = 1
 
-    def __iter__(self):
+    def __iter__(self) -> LexerStream:
         return self
 
-    def _update_pos(self, match):
+    def _update_pos(self, match: Match) -> int:
         self.idx = match.end
         self._lineno += self.s.count("\n", match.start, match.end)
         last_nl = self.s.rfind("\n", 0, match.start)
@@ -34,7 +39,7 @@ class LexerStream:
         else:
             return match.start - last_nl
 
-    def next(self):
+    def next(self) -> Token:
         while True:
             if self.idx >= len(self.s):
                 raise StopIteration
@@ -57,5 +62,5 @@ class LexerStream:
         else:
             raise LexingError(None, SourcePosition(self.idx, self._lineno, self._colno))
 
-    def __next__(self):
+    def __next__(self) -> Token:
         return self.next()
