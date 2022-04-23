@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 from collections.abc import MutableMapping
-from typing import Any, Iterator, List, Union
+from typing import Any, Iterator
 
 from rply.grammar import LRItem
 

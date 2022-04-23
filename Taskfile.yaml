@@ -26,8 +26,9 @@ tasks:
   format:
     cmds:
       - find rply -name "*.py" -exec pyupgrade --py38-plus -- "{}" \;
+      - find rply -name "*.py" -exec autoflake --in-place --remove-unused-variables -- "{}" \;
       - isort rply --profile=black
-      - black rply
+      - black --target-version=py38 rply
   annotate:
     cmds:
       - pytest --monkeytype-output ./monkeytype.sqlite3
